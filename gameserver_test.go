@@ -28,7 +28,7 @@ func TestGamerServer(t *testing.T) {
 		},
 		[]string{},
 	}
-	server := &PlayerServer{&store}
+	server := NewPlayerServer(&store)
 
 	t.Run("return Pepper's score", func(t *testing.T) {
 		request := newGetScoreRequest("Pepper")
@@ -36,7 +36,7 @@ func TestGamerServer(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		assertHeaderStatus(t, response.Code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "20")
 	})
 	t.Run("return Floyd's score", func(t *testing.T) {
@@ -45,7 +45,7 @@ func TestGamerServer(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		assertHeaderStatus(t, response.Code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusOK)
 		assertResponseBody(t, response.Body.String(), "10")
 	})
 	t.Run("return 404 on missing players", func(t *testing.T) {
@@ -57,7 +57,7 @@ func TestGamerServer(t *testing.T) {
 		got := response.Code
 		want := http.StatusNotFound
 
-		assertHeaderStatus(t, got, want)
+		assertStatus(t, got, want)
 	})
 }
 
@@ -66,7 +66,7 @@ func TestStoreWins(t *testing.T) {
 		map[string]int{},
 		[]string{},
 	}
-	server := &PlayerServer{&store}
+	server := NewPlayerServer(&store)
 
 	t.Run("it returns accepted on POST", func(t *testing.T) {
 		request := newPostWinRequest("Pepper")
@@ -74,7 +74,7 @@ func TestStoreWins(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-		assertHeaderStatus(t, response.Code, http.StatusAccepted)
+		assertStatus(t, response.Code, http.StatusAccepted)
 		if len(store.winCalls) != 1 {
 			t.Errorf("got %d calls to RecordWin, want %d", len(store.winCalls), 1)
 		}
@@ -86,14 +86,14 @@ func TestStoreWins(t *testing.T) {
 
 func TestLeague(t *testing.T) {
 	store := StubPlayerStore{}
-	server := &PlayerServer{&store}
+	server := NewPlayerServer(&store)
 	t.Run("it returns 200 on /league", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/league", nil)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
-		assertHeaderStatus(t, response.Code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusOK)
 	})
 }
 
@@ -114,7 +114,7 @@ func assertResponseBody(t *testing.T, got, want string) {
 	}
 }
 
-func assertHeaderStatus(t *testing.T, got, want int) {
+func assertStatus(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {
 		t.Errorf("want Header status %d, got %d", want, got)

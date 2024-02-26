@@ -8,7 +8,7 @@ import (
 
 func TestRecordingWinAndRetrievingThem(t *testing.T) {
 	store := NewInMemoryPlayerStore()
-	server := PlayerServer{store}
+	server := NewPlayerServer(store)
 	player := "Pepper"
 
 	server.ServeHTTP(httptest.NewRecorder(), newPostWinRequest(player))
@@ -17,6 +17,6 @@ func TestRecordingWinAndRetrievingThem(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	server.ServeHTTP(response, newGetScoreRequest(player))
-	assertHeaderStatus(t, response.Code, http.StatusOK)
+	assertStatus(t, response.Code, http.StatusOK)
 	assertResponseBody(t, response.Body.String(), "3")
 }
